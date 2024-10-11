@@ -3,6 +3,7 @@ import express, { json, urlencoded } from "express";
 import { corsMiddleware } from './middlewares/cors.js'
 import cookieParser from 'cookie-parser'
 import { userRouter } from "./routes/user.js"
+import { cabinRouter } from "./routes/cabin.js";
 
 import passport  from "passport";
 import dotenv from 'dotenv'
@@ -34,6 +35,7 @@ app.use(passport.session());
 
 // Cargo las rutas
 app.use("/api/user", userRouter);
+app.use("/api/cabin", cabinRouter);
 
 // Poner servidor a escuchar peticiones http
 const PORT = process.env.PORT ?? 3900;

@@ -5,10 +5,15 @@ const MODELO = ['Grande', 'Mediana', 'Pequeña'];
 const DISPONIBILIDAD = ['Disponible', 'Ocupada', 'En mantenimiento'];
 
 const CabaniaSchema = new Schema({
-    imagen: {
-        type: String, // Usar un string para guardar la URL de la imagen
-        required: false
+    imagenPrincipal: {
+        type: String,
+        required: false,
+        default: "https://imgs.search.brave.com/9LlSJwjHti-qX9I28l9M1gEH_-uWMrYMGhMc0iJ8Hpc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/Y29ubWlzaGlqb3Mu/Y29tL2Fzc2V0cy9w/b3N0cy83MDAwLzc0/MDMtZGlidWpvcy1j/YWJhbmEtMS5qcGc"
     },
+    imagenes: [{
+        type: String,
+        required: false
+    }],
     modelo: {
         type: String,
         enum: MODELO,

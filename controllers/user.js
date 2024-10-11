@@ -219,7 +219,7 @@ const editUser = async (req, res) => {
     }
 };
 
-const subir = async (req, res) => {
+const uploadImage = async (req, res) => {
     try {
         
         if (!req.file && !req.files) {
@@ -277,5 +277,5 @@ export default {
     googleCallback,
     editUser,
     completeProfile,
-    subir
+    uploadImage
 }
