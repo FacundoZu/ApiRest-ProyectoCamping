@@ -219,7 +219,7 @@ const editUser = async (req, res) => {
     }
 };
 
-const subir = async (req, res) => {
+const uploadImage = async (req, res) => {
     try {
         
         if (!req.file && !req.files) {
@@ -237,7 +237,7 @@ const subir = async (req, res) => {
             });
         }
 
-        const { downloadURL } = await uploadFile(image[0]);
+        const { downloadURL } = await uploadFile(image[0], 600, 600);
         const userId = req.user.id;
 
         const usuarioActualizado = await User.findOneAndUpdate(
@@ -277,5 +277,5 @@ export default {
     googleCallback,
     editUser,
     completeProfile,
-    subir
+    uploadImage
 }
