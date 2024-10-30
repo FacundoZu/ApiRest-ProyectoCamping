@@ -6,6 +6,7 @@ import { userRouter } from "./routes/user.js"
 import { cabinRouter } from "./routes/cabin.js";
 import { reservationRouter } from "./routes/reservation.js";
 import { serviceRouter } from "./routes/service.js";
+import { activityRouter } from "./routes/activity.js";
 
 import './config/passport.js'; 
 import passport  from "passport";
@@ -37,6 +38,7 @@ app.use("/api/user", userRouter);
 app.use("/api/cabin", cabinRouter);
 app.use("/api/reservation", reservationRouter)
 app.use("/api/service", serviceRouter)
+app.use("/api/activity", activityRouter)
 
 const PORT = process.env.PORT ?? 3900;
 app.listen(PORT, () => {

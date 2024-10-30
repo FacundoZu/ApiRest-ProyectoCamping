@@ -1,12 +1,6 @@
 import Cabin from "../models/cabin.js";
 import { uploadFile } from '../utils/uploadFile.js'
 
-const prueba = (req, res) => {
-    return res.status(200).json({
-        message: "mensaje desde cabañas"
-    })
-}
-
 const getCabins = async (req, res) => {
     try {
         const { descripcion, cantidadPersonas, cantidadHabitaciones, cantidadBaños, servicios } = req.query;
@@ -136,7 +130,6 @@ const getCabin = async (req, res) => {
 
 
 export default {
-    prueba,
     createCabin,
     getCabins,
     uploadImageCabin,

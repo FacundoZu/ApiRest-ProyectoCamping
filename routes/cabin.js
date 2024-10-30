@@ -6,7 +6,6 @@ import { authRequire } from "../middlewares/validateToken.js"
 
 export const cabinRouter = Router()
 
-cabinRouter.get('/prueba', CabinController.prueba);
 cabinRouter.get('/getCabins', CabinController.getCabins);
 cabinRouter.post('/create', CabinController.createCabin);
 cabinRouter.post("/uploadImage/:id", [authRequire, upload.fields([{ name: 'image', maxCount: 1 }])], CabinController.uploadImageCabin);
