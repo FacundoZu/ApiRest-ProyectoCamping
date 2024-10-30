@@ -9,10 +9,10 @@ const prueba = (req, res) => {
 
 const getCabins = async (req, res) => {
     try {
-        const { descripcion, cantidadPersonas, cantidadHabitaciones, cantidadBaños } = req.query;
+        const { descripcion, cantidadPersonas, cantidadHabitaciones, cantidadBaños, servicios } = req.query;
 
         const filtros = {};
-
+        
         if (descripcion) {
             filtros.descripcion = { $regex: descripcion, $options: 'i' };
         }
@@ -29,7 +29,12 @@ const getCabins = async (req, res) => {
             filtros.cantidadBaños = cantidadBaños;
         }
 
-        const cabins = await Cabin.find(filtros);
+        if (servicios) {
+            const serviciosArray = servicios.split(',');
+            filtros.servicios = { $in: serviciosArray.map(serviceId => serviceId.trim()) };
+        }
+        
+        const cabins = await Cabin.find(filtros).populate('servicios');
 
         return res.status(200).json({
             success: true,
@@ -46,8 +51,8 @@ const getCabins = async (req, res) => {
 
 const createCabin = async (req, res) => {
     try {
-        const { modelo, precio, descripcion, cantidadPersonas, cantidadBaños, cantidadHabitaciones, estado } = req.body;
-        const newCabin = new Cabin({ modelo, precio, descripcion, cantidadPersonas, cantidadBaños, cantidadHabitaciones, estado });
+        const { nombre, modelo, precio, descripcion, cantidadPersonas, cantidadBaños, cantidadHabitaciones, estado, servicios } = req.body;
+        const newCabin = new Cabin({ nombre, modelo, precio, descripcion, cantidadPersonas, cantidadBaños, cantidadHabitaciones, estado, servicios });
         const savedCabin = await newCabin.save();
         return res.status(201).json(savedCabin);
     } catch (error) {
@@ -75,7 +80,7 @@ const uploadImageCabin = async (req, res) => {
             });
         }
 
-        const { downloadURL } = await uploadFile(image[0]);
+        const { downloadURL } = await uploadFile(image[0], 1280, 720);
 
         const cabinId = req.params.id;
         const isMain = req.body.isMain;
@@ -116,7 +121,7 @@ const getCabin = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const cabin = await Cabin.findById(id);
+        const cabin = await Cabin.findById(id).populate('servicios');
         
         if (!cabin) {
             return res.status(404).json({ message: 'Cabaña no encontrada' });

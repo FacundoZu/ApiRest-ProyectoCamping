@@ -1,14 +1,18 @@
 import { Schema, model } from 'mongoose';
 
-// Definir las opciones de modelo y disponibilidad
 const MODELO = ['Grande', 'Mediana', 'Pequeña'];
-const DISPONIBILIDAD = ['Disponible', 'Ocupada', 'En mantenimiento'];
+const DISPONIBILIDAD = ['Disponible', 'Ocupada', 'En Mantenimiento', 'No Disponible', 'En Renovación'];
 
 const CabaniaSchema = new Schema({
+    nombre: {
+        type: String,
+        required: true,
+        maxlength: 20
+    },
     imagenPrincipal: {
         type: String,
         required: false,
-        default: "https://imgs.search.brave.com/9LlSJwjHti-qX9I28l9M1gEH_-uWMrYMGhMc0iJ8Hpc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/Y29ubWlzaGlqb3Mu/Y29tL2Fzc2V0cy9w/b3N0cy83MDAwLzc0/MDMtZGlidWpvcy1j/YWJhbmEtMS5qcGc"
+        default: "https://imgs.search.brave.com/Xmn_DX1Sg_IKm222XB-QKwZOj--aJU_pEAB6lEBsuI4/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/Y29uc3RydXllaG9n/YXIuY29tL3dwLWNv/bnRlbnQvdXBsb2Fk/cy8yMDE0LzExL0Rp/c2UlQzMlQjFvLWRl/LWNhYmElQzMlQjFh/LXBlcXVlJUMzJUIx/YS1kZS1jYW1wbzEu/anBn"
     },
     imagenes: [{
         type: String,
@@ -50,32 +54,15 @@ const CabaniaSchema = new Schema({
         enum: DISPONIBILIDAD,
         default: 'Disponible',
         required: true
-    }
+    },
+    servicios: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Servicio'
+    }],
+    reservas: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Reserva'
+    }]
 });
-
-// Método para cambiar el estado de la cabaña
-CabaniaSchema.methods.cambiarEstado = function (nuevoEstado) {
-    this.estado = nuevoEstado || 'Reservada';
-    return this.save();
-};
-
-// Método para verificar si la cabaña está disponible en un rango de fechas
-CabaniaSchema.methods.estaDisp = async function (checkin, checkout) {
-    const reservas = await model('Reserva').find({ cabania_id: this._id });
-    
-    for (let reserva of reservas) {
-        if ((checkin < reserva.end_date && checkout > reserva.start_date) ||
-            (checkin > reserva.start_date && checkin < reserva.end_date)) {
-            return false;
-        }
-    }
-    
-    return true;
-};
-
-// Método para obtener las fechas de las reservas
-CabaniaSchema.methods.fechas = function () {
-    return model('Reserva').find({ cabania_id: this._id });
-};
 
 export default model('Cabania', CabaniaSchema);

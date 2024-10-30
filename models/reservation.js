@@ -1,6 +1,8 @@
 import { Schema, model } from 'mongoose';
 
-const ReservaSchema = new Schema({
+const ESTADO = ['pendiente', 'confirmada', 'rechazada', 'completada', 'cancelada'];
+
+const ReservationSchema = new Schema({
     usuarioId: {
         type: Schema.Types.ObjectId,
         ref: 'Usuario',
@@ -23,10 +25,20 @@ const ReservaSchema = new Schema({
         type: Number,
         required: true
     },
+    estadoReserva: {
+        type: String,
+        enum: ESTADO,
+        default: 'pendiente',
+        required: true
+    },
     fechaCreacion: {
         type: Date,
         default: Date.now
-    }
+    },
+    //paymentId: {
+    //    type: Schema.Types.ObjectId,
+    //    ref: 'Payment'
+    //}
 });
 
-export default model('Reserva', ReservacionSchema, "reservas");
+export default model('Reserva', ReservationSchema, "reservas");

@@ -237,7 +237,7 @@ const uploadImage = async (req, res) => {
             });
         }
 
-        const { downloadURL } = await uploadFile(image[0]);
+        const { downloadURL } = await uploadFile(image[0], 600, 600);
         const userId = req.user.id;
 
         const usuarioActualizado = await User.findOneAndUpdate(
