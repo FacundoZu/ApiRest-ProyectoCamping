@@ -9,5 +9,6 @@ activityRouter.get('/getAllActivities', activityController.getAllActivities);
 activityRouter.get('/getActivity/:id', activityController.getActivityById);
 activityRouter.put('/updateActivity/:id', authRequire, activityController.updateActivity);
 activityRouter.delete('/deleteActivity/:id', authRequire, activityController.deleteActivity);
+activityRouter.put('/cambiarEstado/:id', authRequire, activityController.changeState)
 
 export default activityRouter;

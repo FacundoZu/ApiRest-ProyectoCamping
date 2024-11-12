@@ -21,7 +21,7 @@ export const corsMiddleware = ({ acceptedOrigins = ACCEPTED_ORIGINS } = {}) => c
 
     },
     credentials: true, // Permitir el envío de cookies/credenciales
-    methods: ['GET', 'POST'], // Métodos permitidos
+    methods: ['GET', 'POST', 'PUT'], // Métodos permitidos
     allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
 })
 

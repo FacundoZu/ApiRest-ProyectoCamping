@@ -6,7 +6,7 @@ const getCabins = async (req, res) => {
         const { descripcion, cantidadPersonas, cantidadHabitaciones, cantidadBaños, servicios } = req.query;
 
         const filtros = {};
-        
+
         if (descripcion) {
             filtros.descripcion = { $regex: descripcion, $options: 'i' };
         }
@@ -27,7 +27,7 @@ const getCabins = async (req, res) => {
             const serviciosArray = servicios.split(',');
             filtros.servicios = { $in: serviciosArray.map(serviceId => serviceId.trim()) };
         }
-        
+
         const cabins = await Cabin.find(filtros).populate('servicios');
 
         return res.status(200).json({
@@ -48,7 +48,10 @@ const createCabin = async (req, res) => {
         const { nombre, modelo, precio, descripcion, cantidadPersonas, cantidadBaños, cantidadHabitaciones, estado, servicios } = req.body;
         const newCabin = new Cabin({ nombre, modelo, precio, descripcion, cantidadPersonas, cantidadBaños, cantidadHabitaciones, estado, servicios });
         const savedCabin = await newCabin.save();
-        return res.status(201).json(savedCabin);
+        return res.status(201).json({
+            status: 'success',
+            cabin: savedCabin
+        });
     } catch (error) {
         return res.status(500).json({
             message: "Error al crear la cabaña",
@@ -65,7 +68,7 @@ const uploadImageCabin = async (req, res) => {
                 message: "No se ha subido ningún archivo"
             });
         }
-        
+
         const image = req.files.image;
         if (!image || image.length === 0) {
             return res.status(400).json({
@@ -79,7 +82,7 @@ const uploadImageCabin = async (req, res) => {
         const cabinId = req.params.id;
         const isMain = req.body.isMain;
 
-        const updateData = isMain === "true" 
+        const updateData = isMain === "true"
             ? { imagenPrincipal: downloadURL }
             : { $push: { imagenes: downloadURL } };
 
@@ -115,8 +118,10 @@ const getCabin = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const cabin = await Cabin.findById(id).populate('servicios');
-        
+        const cabin = await Cabin.findById(id)
+            .populate('servicios')
+            .select('nombre modelo precio descripcion cantidadPersonas cantidadBaños cantidadHabitaciones estado servicios imagenPrincipal imagenesAdicionales');
+
         if (!cabin) {
             return res.status(404).json({ message: 'Cabaña no encontrada' });
         }
@@ -128,10 +133,57 @@ const getCabin = async (req, res) => {
     }
 }
 
+const updateCabin = async (req, res) => {
+    try {
+        const updatedCabin = await Cabin.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updatedCabin) return res.status(404).json({
+            mensaje: 'Cabaña no encontrada'
+        });
+        return res.status(200).json({
+            status: 'success',
+            updatedCabin
+        })
+    } catch (error) {
+        res.status(500).json({ mensaje: 'Error al actualizar la cabaña' });
+    }
+};
+
+export const getOpcionesCabania = async (req, res) => {
+    try {
+        const modelos = Cabin.getModelos();
+        const disponibilidades = Cabin.getDisponibilidades();
+        return res.status(200).json({
+            modelos, disponibilidades
+        });
+    } catch (error) {
+        return res.status(500).json({ message: "Error al obtener opciones", error });
+    }
+};
+
+export const changeState = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const cabin = await Cabin.findById(id);
+
+        if (!cabin) {
+            return res.status(404).json({ message: 'Cabaña no encontrada' });
+        }
+
+        cabin.estado = cabin.estado === 'Disponible' ? 'No Disponible' : 'Disponible';
+
+        await cabin.save();
+        res.json({ message: `Estado cambiado a ${cabin.estado}`, cabin });
+    } catch (error) {
+        res.status(500).json({ message: 'Error al cambiar el estado de la cabaña' });
+    }
+};
 
 export default {
     createCabin,
     getCabins,
     uploadImageCabin,
     getCabin,
+    getOpcionesCabania,
+    updateCabin,
+    changeState
 }

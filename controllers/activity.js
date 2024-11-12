@@ -76,10 +76,34 @@ const deleteActivity = async (req, res) => {
     }
 };
 
+export const changeState = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const activity = await Actividad.findById(id);
+
+        if (!activity) {
+            return res.status(404).json({ message: 'Actividad no encontrada' });
+        }
+
+        activity.estado = activity.estado === 'Habilitado' ? 'Deshabilitado' : 'Habilitado';
+        await activity.save();
+
+        res.json({
+            status: 'success',
+            message: `El estado ha sido cambiado a ${activity.estado}`,
+            activity
+        });
+    } catch (error) {
+        console.error('Error al cambiar el estado:', error);
+        res.status(500).json({ message: 'Error al cambiar el estado de la actividad' });
+    }
+};
+
 export default {
     createActivity,
     getAllActivities,
     getActivityById,
     updateActivity,
-    deleteActivity
+    deleteActivity,
+    changeState
 };
