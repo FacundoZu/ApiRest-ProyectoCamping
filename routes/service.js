@@ -9,5 +9,6 @@ serviceRouter.get('/getAllServices', serviceController.getAllServices);
 serviceRouter.get('/getService/:id', serviceController.getServiceById);
 serviceRouter.put('/updateService/:id', authRequire, serviceController.updateService);
 serviceRouter.delete('/deleteService/:id', authRequire, serviceController.deleteService);
+serviceRouter.put('/cambiarEstado/:id', authRequire, serviceController.changeState)
 
 export default serviceRouter;

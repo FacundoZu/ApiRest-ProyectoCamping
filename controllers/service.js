@@ -70,10 +70,35 @@ const deleteService = async (req, res) => {
     }
 };
 
+export const changeState = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const service = await Service.findById(id);
+
+        if (!service) {
+            return res.status(404).json({ message: 'Servicio no encontrado' });
+        }
+
+        service.estado = service.estado === 'Habilitado' ? 'Deshabilitado' : 'Habilitado';
+        await service.save();
+
+        res.json({
+            status: 'success',
+            message: `El estado ha sido cambiado a ${service.estado}`,
+            service
+        });
+    } catch (error) {
+        console.error('Error al cambiar el estado:', error);
+        res.status(500).json({ message: 'Error al cambiar el estado del servicio' });
+    }
+};
+
+
 export default {
     createService,
     getAllServices,
     getServiceById,
     updateService,
-    deleteService
+    deleteService,
+    changeState
 };

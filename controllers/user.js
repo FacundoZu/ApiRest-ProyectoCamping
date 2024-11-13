@@ -137,7 +137,8 @@ const profile = async (req, res) => {
                 id: userFound.id,
                 email: userFound.email,
                 name: userFound.name,
-                image: userFound.imageUrl
+                image: userFound.imageUrl,
+                role: userFound.role
             }
         })
     } catch (error) {

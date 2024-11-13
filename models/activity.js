@@ -24,6 +24,12 @@ const ActivitiSchema = new Schema({
         type: Date,
         required: false
     },
+    estado: {
+        type: String,
+        required: true,
+        enum: ['Habilitado','Deshabilitado'],
+        default: 'Deshabilitado'
+    },
 });
 
 export default model('Actividad', ActivitiSchema, "actividades");

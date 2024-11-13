@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 
 const MODELO = ['Grande', 'Mediana', 'Pequeña'];
-const DISPONIBILIDAD = ['Disponible', 'Ocupada', 'En Mantenimiento', 'No Disponible', 'En Renovación'];
+const DISPONIBILIDAD = ['Disponible', 'En Mantenimiento', 'No Disponible', 'En Renovación'];
 
 const CabaniaSchema = new Schema({
     nombre: {
@@ -64,5 +64,13 @@ const CabaniaSchema = new Schema({
         ref: 'Reserva'
     }]
 });
+
+CabaniaSchema.statics.getModelos = function () {
+    return ['Grande', 'Mediana', 'Pequeña'];
+};
+
+CabaniaSchema.statics.getDisponibilidades = function () {
+    return ['Disponible', 'En Mantenimiento', 'No Disponible', 'En Renovación'];
+};
 
 export default model('Cabania', CabaniaSchema);

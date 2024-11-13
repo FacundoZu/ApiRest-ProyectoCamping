@@ -1,27 +1,22 @@
 import { Schema, model } from 'mongoose';
 
-const ServiceSchema = new Schema({
-    nombre: {
+const QuestionsSchema = new Schema({
+    pregunta: {
         type: String,
         required: true,
         unique: true
     },
-    imagen: {
+    respuesta: {
         type: String,
         required: false,
-        default: "https://cdn-icons-png.flaticon.com/128/8382/8382949.png"
-    },
-    descripcion: {
-        type: String,
-        required: false,
-        maxlength: 200
+        maxlength: 600
     },
     estado: {
         type: String,
         required: true,
         enum: ['Habilitado','Deshabilitado'],
         default: 'Deshabilitado'
-    }
+    },
 });
 
-export default model('Servicio', ServiceSchema, "servicios");
+export default model('Pregunta', QuestionsSchema, "preguntas");
