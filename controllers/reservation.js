@@ -83,7 +83,6 @@ const getReservations = async (req, res) => {
     }
 };
 
-
 export default {
     createReservation,
     getReservations
