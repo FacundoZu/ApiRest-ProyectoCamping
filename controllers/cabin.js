@@ -3,7 +3,7 @@ import { uploadFile } from '../utils/uploadFile.js'
 
 const getCabins = async (req, res) => {
     try {
-        const { descripcion, cantidadPersonas, cantidadHabitaciones, cantidadBaños, servicios } = req.query;
+        const { descripcion, cantidadPersonas, cantidadHabitaciones, cantidadBaños, servicios, reservasHistoricas } = req.query;
 
         const filtros = {};
 
@@ -22,18 +22,27 @@ const getCabins = async (req, res) => {
         if (cantidadBaños && cantidadBaños !== "0") {
             filtros.cantidadBaños = cantidadBaños;
         }
-
         if (servicios) {
             const serviciosArray = servicios.split(',');
             filtros.servicios = { $in: serviciosArray.map(serviceId => serviceId.trim()) };
         }
 
-        const cabins = await Cabin.find(filtros).populate('servicios');
+        const cabins = await Cabin.find(filtros).populate('servicios').populate('reservas');
+
+        if (reservasHistoricas) {
+            const reservasFilter = parseInt(reservasHistoricas);
+            const filteredCabins = cabins.filter(cabin => cabin.reservas.length >= reservasFilter);
+            return res.status(200).json({
+                success: true,
+                cabins: filteredCabins
+            });
+        }
 
         return res.status(200).json({
             success: true,
             cabins
         });
+
     } catch (error) {
         return res.status(500).json({
             success: false,
@@ -42,6 +51,7 @@ const getCabins = async (req, res) => {
         });
     }
 };
+
 
 const createCabin = async (req, res) => {
     try {
