@@ -1,7 +1,6 @@
 import Pregunta from '../models/questions.js'; 
 
 const createQuestion = async (req, res) => {
-    console.log(req.body)
     try {
         const { pregunta, respuesta, estado } = req.body;
 
@@ -36,6 +35,7 @@ const createQuestion = async (req, res) => {
 const getAllQuestions = async (req, res) => {
     try {
         const preguntas = await Pregunta.find();
+        
         res.status(200).json({
             status: 'success',
             preguntas
@@ -61,7 +61,10 @@ const getQuestionById = async (req, res) => {
             });
         }
 
-        res.status(200).json(pregunta);
+        res.status(200).json({
+            status: "success",
+            pregunta
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({
@@ -89,6 +92,7 @@ const updateQuestion = async (req, res) => {
         }
 
         res.status(200).json({
+            status: "success",
             message: 'Pregunta actualizada exitosamente.',
             preguntaActualizada
         });

@@ -96,8 +96,19 @@ const getReservationsUser = async (req, res) => {
     }
 };
 
+const getAllReservations = async (req, res) => {
+    try {
+      const reservations = await Reservation.find().populate('cabaniaId');
+      res.status(200).json({ reservations });
+    } catch (error) {
+      console.error("Error al obtener las reservas:", error);
+      res.status(500).json({ message: "Error al obtener las reservas" });
+    }
+  };
+
 export default {
     createReservation,
     getReservations,
-    getReservationsUser
+    getReservationsUser,
+    getAllReservations
 };
