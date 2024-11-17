@@ -96,6 +96,7 @@ const login = async (req, res) => {
                 id: userSearched._id,
                 email: userSearched.email,
                 name: userSearched.name,
+                role: userSearched.role,
                 image: userSearched.imageUrl
             },
         });
@@ -137,8 +138,8 @@ const profile = async (req, res) => {
                 id: userFound.id,
                 email: userFound.email,
                 name: userFound.name,
+                role: userFound.role,
                 image: userFound.imageUrl,
-                role: userFound.role
             }
         })
     } catch (error) {
