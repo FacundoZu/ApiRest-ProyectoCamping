@@ -1,6 +1,7 @@
 import User from "../models/user.js"
 import { uploadFile } from '../utils/uploadFile.js'
 
+
 const register = async (req, res) => {
     let params = req.body;
 
@@ -119,6 +120,45 @@ const logout = (req, res) => {
     return res.sendStatus(200);
 };
 
+const getAllUsers = async (req, res) => {
+    try {
+        const { page = 1, limit = 10, name, email, sortRole } = req.query;
+
+        const filtros = {};
+
+        if (name) filtros.name = { $regex: name, $options: 'i' };
+        if (email) filtros.email = { $regex: email, $options: 'i' };
+
+        let sort = {};
+        if (sortRole) {
+            sort.role = sortRole === 'asc' ? 1 : -1;
+        }
+
+        const users = await User.find(filtros)
+            .sort(sort)
+            .skip((page - 1) * limit)
+            .limit(Number(limit))
+            .exec();
+        console.log(filtros)
+        const totalUsuarios = await User.countDocuments(filtros);
+        console.log(totalUsuarios)
+
+        res.status(200).json({
+            status: 'success',
+            users,
+            totalUsuarios,
+            totalPages: Math.ceil(totalUsuarios / limit),
+            currentPage: Number(page),
+        });
+    } catch (error) {
+        console.error("Error al obtener los usuarios:", error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Error al obtener los usuarios.',
+        });
+    }
+};
+
 const profile = async (req, res) => {
     try {
         let userFound = await User.findById(req.user.id);
@@ -140,6 +180,35 @@ const profile = async (req, res) => {
                 name: userFound.name,
                 role: userFound.role,
                 image: userFound.imageUrl,
+            }
+        })
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: "Error al buscar usuario"
+        })
+    }
+}
+
+const profileById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        let userFound = await User.findById(id);
+
+        if (!userFound) {
+            return res.status(400).json({
+                menssage: "Usuario no encontrado",
+            })
+        }
+
+        return res.status(200).json({
+            status: "success",
+            user: {
+                id: userFound.id,
+                email: userFound.email,
+                name: userFound.name,
+                image: userFound.imageUrl,
+                role: userFound.role
             }
         })
     } catch (error) {
@@ -177,6 +246,46 @@ const completeProfile = async (req, res) => {
             status: "error",
             message: "Error al buscar usuario"
         })
+    }
+}
+
+const changeRole = async (req, res) => {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    const rolesPermitidos = ["admin", "gerente", "cliente"];
+    if (!rolesPermitidos.includes(role)) {
+        return res.status(400).json({
+            status: "error",
+            message: "Rol no válido",
+        });
+    }
+
+    try {
+        const usuarioActualizado = await User.findByIdAndUpdate(
+            id,
+            { role: role },
+            { new: true }
+        );
+
+        if (!usuarioActualizado) {
+            return res.status(404).json({
+                status: "error",
+                message: "Usuario no encontrado",
+            });
+        }
+
+        return res.json({
+            status: "success",
+            message: "Rol actualizado correctamente",
+            user: usuarioActualizado,
+        });
+    } catch (error) {
+        console.error("Error al actualizar el rol:", error);
+        return res.status(500).json({
+            status: "error",
+            message: "Error al actualizar el rol",
+        });
     }
 }
 
@@ -223,14 +332,14 @@ const editUser = async (req, res) => {
 
 const uploadImage = async (req, res) => {
     try {
-        
+
         if (!req.file && !req.files) {
             return res.status(400).json({
                 status: "error",
                 message: "No se ha subido ningún archivo"
             });
         }
-        
+
         const image = req.files.image;
         if (!image || image.length === 0) {
             return res.status(400).json({
@@ -279,5 +388,8 @@ export default {
     googleCallback,
     editUser,
     completeProfile,
-    uploadImage
+    uploadImage,
+    profileById,
+    getAllUsers,
+    changeRole
 }

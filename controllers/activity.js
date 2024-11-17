@@ -1,4 +1,5 @@
 import Actividad from "../models/activity.js";
+import { uploadFile } from "../utils/uploadFile.js";
 
 const createActivity = async (req, res) => {
     try {
@@ -100,7 +101,38 @@ const updateActivity = async (req, res) => {
     }
 };
 
+const uploadActivityImage = async (req, res) => {
+    try {
+        if (!req.file && !req.files) {
+            return res.status(400).json({
+                status: "error",
+                message: "No se ha subido ningún archivo"
+            });
+        }
 
+        const image = req.files.image;
+        if (!image || image.length === 0) {
+            return res.status(400).json({
+                status: "error",
+                message: "No se ha encontrado una imagen válida"
+            });
+        }
+
+        const { downloadURL } = await uploadFile(image[0], 600, 600); 
+
+        return res.status(200).json({
+            status: "success",
+            imageUrl: downloadURL,
+            message: "Imagen subida correctamente",
+        });
+    } catch (error) {
+        console.error("Error al subir la imagen:", error);
+        return res.status(500).json({
+            status: "error",
+            message: "Error interno en el servidor"
+        });
+    }
+};
 
 const deleteActivity = async (req, res) => {
     try {
@@ -143,5 +175,6 @@ export default {
     getActivityById,
     updateActivity,
     deleteActivity,
-    changeState
+    changeState,
+    uploadActivityImage
 };
