@@ -1,11 +1,12 @@
 import { Schema, model } from 'mongoose';
 
 const ESTADO = ['pendiente', 'confirmada', 'rechazada', 'completada', 'cancelada'];
+const METODOPAGO = ['tarjeta_credito', 'tarjeta_debito', 'transferencia'];
 
 const ReservationSchema = new Schema({
     usuarioId: {
         type: Schema.Types.ObjectId,
-        ref: 'Usuario',
+        ref: 'User',
         required: true
     },
     cabaniaId: {
@@ -35,10 +36,15 @@ const ReservationSchema = new Schema({
         type: Date,
         default: Date.now
     },
-    //paymentId: {
-    //    type: Schema.Types.ObjectId,
-    //    ref: 'Payment'
-    //}
+    metodoPago: {
+        type: String,
+        enum: METODOPAGO,
+        required: true,
+    },
+    payment: {
+        type: Schema.Types.ObjectId,
+        ref: 'Payment'
+    }
 });
 
 export default model('Reserva', ReservationSchema, "reservas");

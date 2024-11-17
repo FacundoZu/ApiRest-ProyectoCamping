@@ -8,3 +8,4 @@ reservationRouter.post('/createReservation', authRequire, ReservationController.
 reservationRouter.get('/getReservations/:id', ReservationController.getReservations);
 reservationRouter.get('/getReservationsUser/:usuarioId', ReservationController.getReservationsUser);
 reservationRouter.get('/getAllReservations', authRequire, ReservationController.getAllReservations);
+reservationRouter.get('/getUserReservations/:userId/:cabinId', ReservationController.getUserReservations);

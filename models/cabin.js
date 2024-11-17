@@ -62,7 +62,11 @@ const CabaniaSchema = new Schema({
     reservas: [{
         type: Schema.Types.ObjectId,
         ref: 'Reserva'
-    }]
+    }],
+    comentarios: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Review'
+    }],
 });
 
 CabaniaSchema.statics.getModelos = function () {

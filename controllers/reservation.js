@@ -1,9 +1,10 @@
 import Reservation from '../models/reservation.js';
 import Cabin from '../models/cabin.js';
+import Payment from '../models/payment.js';
 
 const createReservation = async (req, res) => {
     try {
-        const { usuarioId, cabaniaId, fechaInicio, fechaFinal, precioTotal } = req.body;
+        const { usuarioId, cabaniaId, fechaInicio, fechaFinal, precioTotal, payment } = req.body;
         const fechaActual = new Date();
 
         if (new Date(fechaInicio) <= fechaActual) {
@@ -27,7 +28,7 @@ const createReservation = async (req, res) => {
         });
 
         if (reservasExistentes.length > 0) {
-            return res.status(400).json({ mensaje: 'Ya existe una reserva para esta fecha o está muy proxima a otra.' });
+            return res.status(400).json({ mensaje: 'Ya existe una reserva para esta fecha o está muy próxima a otra.' });
         }
 
         const nuevaReserva = new Reservation({
@@ -35,17 +36,32 @@ const createReservation = async (req, res) => {
             cabaniaId,
             fechaInicio,
             fechaFinal,
-            precioTotal
+            precioTotal,
+            metodoPago: payment.tipo,
+            estadoReserva: 'confirmada',
         });
 
         const reservaGuardada = await nuevaReserva.save();
+
+        const nuevoPago = new Payment({
+            reservaId: reservaGuardada._id,
+            tipo: payment.tipo,
+            precioTotal,
+            estadoPago: payment.estadoPago || 'pagado',
+            transaccionId: payment.transaccionId || null,
+            cuotas: payment.cuotas || null
+        });
+
+        const pagoGuardado = await nuevoPago.save();
+
         await Cabin.findByIdAndUpdate(cabaniaId, {
             $push: { reservas: reservaGuardada._id }
         });
 
         res.status(201).json({
             status: "success",
-            reservaGuardada
+            reservaGuardada,
+            pagoGuardado
         });
     } catch (error) {
         res.status(500).json({ mensaje: 'Error al crear la reserva', error });
@@ -98,17 +114,33 @@ const getReservationsUser = async (req, res) => {
 
 const getAllReservations = async (req, res) => {
     try {
-      const reservations = await Reservation.find().populate('cabaniaId');
-      res.status(200).json({ reservations });
+        const reservations = await Reservation.find().populate('cabaniaId');
+        res.status(200).json({ reservations });
     } catch (error) {
-      console.error("Error al obtener las reservas:", error);
-      res.status(500).json({ message: "Error al obtener las reservas" });
+        console.error("Error al obtener las reservas:", error);
+        res.status(500).json({ message: "Error al obtener las reservas" });
     }
-  };
+};
+
+export const getUserReservations = async (req, res) => {
+    const { userId, cabinId } = req.params;
+
+    try {
+        const reservas = await Reservation.find({
+            usuarioId: userId,
+            cabaniaId: cabinId,
+        });
+
+        res.status(200).json({ reservas });
+    } catch (error) {
+        res.status(500).json({ mensaje: "Error al obtener reservas del usuario", error });
+    }
+};
 
 export default {
     createReservation,
     getReservations,
     getReservationsUser,
-    getAllReservations
+    getAllReservations,
+    getUserReservations
 };

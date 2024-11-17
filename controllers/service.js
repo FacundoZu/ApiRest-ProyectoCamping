@@ -1,22 +1,58 @@
 import Service from "../models/service.js";
+import { uploadFile } from "../utils/uploadFile.js";
 
 const createService = async (req, res) => {
     try {
         const { nombre, imagen, descripcion } = req.body;
+
         if (!nombre || nombre.trim() === "") {
             return res.status(400).json({ success: false, mensaje: "El nombre del servicio es obligatorio" });
         }
-        if (!imagen || imagen.trim() === "") {
-            return res.status(400).json({ success: false, mensaje: "La imagen del servicio es obligatoria" });
-        }
+
         if (!descripcion || descripcion.trim() === "") {
             return res.status(400).json({ success: false, mensaje: "La descripción del servicio es obligatoria" });
         }
+
         const newService = new Service({ nombre, imagen, descripcion });
         const savedService = await newService.save();
+
         return res.status(201).json({ success: true, mensaje: "Servicio creado exitosamente", service: savedService });
     } catch (error) {
+        console.error("Error al crear el servicio:", error);
         return res.status(500).json({ success: false, mensaje: 'Error al crear el servicio', error });
+    }
+};
+
+const uploadServiceImage = async (req, res) => {
+    try {
+        if (!req.file && !req.files) {
+            return res.status(400).json({
+                status: "error",
+                message: "No se ha subido ningún archivo"
+            });
+        }
+
+        const image = req.files.image;
+        if (!image || image.length === 0) {
+            return res.status(400).json({
+                status: "error",
+                message: "No se ha encontrado una imagen válida"
+            });
+        }
+
+        const { downloadURL } = await uploadFile(image[0], 600, 600); 
+
+        return res.status(200).json({
+            status: "success",
+            imageUrl: downloadURL,
+            message: "Imagen subida correctamente",
+        });
+    } catch (error) {
+        console.error("Error al subir la imagen:", error);
+        return res.status(500).json({
+            status: "error",
+            message: "Error interno en el servidor"
+        });
     }
 };
 
@@ -100,5 +136,6 @@ export default {
     getServiceById,
     updateService,
     deleteService,
-    changeState
+    changeState,
+    uploadServiceImage
 };

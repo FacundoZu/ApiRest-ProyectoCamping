@@ -8,11 +8,15 @@ import { reservationRouter } from "./routes/reservation.js";
 import { serviceRouter } from "./routes/service.js";
 import { activityRouter } from "./routes/activity.js";
 import { questionRouter } from "./routes/questions.js";
+import { enviarEmailTicket }  from "./mailer.js"
+import { enviarEmailConsulta }  from "./mailer.js"
 
 import './config/passport.js'; 
 import passport  from "passport";
 import dotenv from 'dotenv'
 import session from 'express-session'
+import reviewRouter from "./routes/review.js";
+import paymentRouter from "./routes/payment.js";
 
 console.log("App de node arrancada");
 dotenv.config();
@@ -34,13 +38,26 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-
 app.use("/api/user", userRouter);
 app.use("/api/cabin", cabinRouter);
 app.use("/api/reservation", reservationRouter)
 app.use("/api/service", serviceRouter)
 app.use("/api/activity", activityRouter)
 app.use("/api/question", questionRouter)
+app.use("/api/reviews", reviewRouter)
+app.use("/api/payment", paymentRouter)
+
+app.post('/api/enviarTicket', (req, res) => {
+  const { correoUsuario, detallesReserva } = req.body;
+  enviarEmailTicket(correoUsuario, detallesReserva);
+  res.json({ success: true });
+});
+
+app.post('/api/enviarEmailConsulta', (req, res) => {
+  const { name, email, message } = req.body.formData;
+  enviarEmailConsulta(name, email, message);
+  res.json({ success: true });
+});
 
 const PORT = process.env.PORT ?? 3900;
 app.listen(PORT, () => {
