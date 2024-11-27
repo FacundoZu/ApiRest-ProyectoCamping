@@ -139,9 +139,7 @@ const getAllUsers = async (req, res) => {
             .skip((page - 1) * limit)
             .limit(Number(limit))
             .exec();
-        console.log(filtros)
         const totalUsuarios = await User.countDocuments(filtros);
-        console.log(totalUsuarios)
 
         res.status(200).json({
             status: 'success',

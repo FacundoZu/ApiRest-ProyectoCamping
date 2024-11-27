@@ -99,7 +99,7 @@ export const enviarEmailConsulta = (name, email, message) => {
     const mailOptions = {
         from: "facundozuleta70@gmail.com",
         to: "facundozuleta90@gmail.com",
-        subject: `Nuevo mensaje de ${name}. Web de camping`,
+        subject: `Nuevo mensaje de ${name}. Web CampingCachi`,
         text: `Email: ${email}\n\nMensaje: ${message}`,
     };
 

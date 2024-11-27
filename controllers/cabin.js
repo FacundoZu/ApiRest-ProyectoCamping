@@ -56,6 +56,7 @@ const createCabin = async (req, res) => {
     try {
         const { nombre, modelo, precio, descripcion, cantidadPersonas, cantidadBaños, cantidadHabitaciones, estado, servicios } = req.body;
         const newCabin = new Cabin({ nombre, modelo, precio, descripcion, cantidadPersonas, cantidadBaños, cantidadHabitaciones, estado, servicios });
+
         const savedCabin = await newCabin.save();
         return res.status(201).json({
             status: 'success',

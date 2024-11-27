@@ -73,12 +73,42 @@ const getReservations = async (req, res) => {
         const cabinId = req.params.id;
         const fechaActual = new Date();
 
+        const fechaDosMesesAtras = new Date();
+        fechaDosMesesAtras.setMonth(fechaActual.getMonth() - 2);
+
         const reservas = await Reservation.find({
             cabaniaId: cabinId,
             $or: [
-                { fechaInicio: { $gte: fechaActual } },
+                { fechaInicio: { $gte: fechaDosMesesAtras } },
                 { estado: 'activa' }
             ]
+        });
+
+
+        if (!reservas || reservas.length === 0) {
+            return res.status(404).json({
+                mensaje: 'No se encontraron reservas para esta cabaña.',
+            });
+        }
+
+        return res.status(200).json({
+            reservas,
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            mensaje: 'Hubo un error al obtener las reservas.',
+        });
+    }
+};
+
+const getAllReservationsCabin = async (req, res) => {
+
+    try {
+        const cabinId = req.params.id;
+        const reservas = await Reservation.find({
+            cabaniaId: cabinId,
         });
 
         if (!reservas || reservas.length === 0) {
@@ -142,5 +172,6 @@ export default {
     getReservations,
     getReservationsUser,
     getAllReservations,
-    getUserReservations
+    getUserReservations,
+    getAllReservationsCabin
 };
