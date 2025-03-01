@@ -1,4 +1,5 @@
 import Cabin from "../models/cabin.js";
+import { deleteFileFromStorage } from "../utils/deleteFile.js";
 import { uploadFile } from '../utils/uploadFile.js'
 
 const getCabins = async (req, res) => {
@@ -54,8 +55,8 @@ const getCabins = async (req, res) => {
 
 const createCabin = async (req, res) => {
     try {
-        const { nombre, modelo, precio, descripcion, cantidadPersonas, cantidadBaños, cantidadHabitaciones, estado, servicios } = req.body;
-        const newCabin = new Cabin({ nombre, modelo, precio, descripcion, cantidadPersonas, cantidadBaños, cantidadHabitaciones, estado, servicios });
+        const { nombre, modelo, precio, descripcion, cantidadPersonas, cantidadBaños, cantidadHabitaciones, estado, servicios, minimoDias } = req.body;
+        const newCabin = new Cabin({ nombre, modelo, precio, descripcion, cantidadPersonas, cantidadBaños, cantidadHabitaciones, estado, servicios, minimoDias });
 
         const savedCabin = await newCabin.save();
         return res.status(201).json({
@@ -124,13 +125,57 @@ const uploadImageCabin = async (req, res) => {
     }
 };
 
+const deleteImageCabin = async (req, res) => {
+    try {
+        const { imageUrl } = req.body;
+        const cabinId = req.params.id;
+
+        console.log(req.body)
+        console.log(imageUrl)
+
+        if (!imageUrl) {
+            return res.status(400).json({
+                status: "error",
+                message: "La URL de la imagen es requerida",
+            });
+        }
+
+        await deleteFileFromStorage(imageUrl);
+
+        const cabañaActualizada = await Cabin.findOneAndUpdate(
+            { _id: cabinId },
+            { $pull: { imagenes: imageUrl } },
+            { new: true }
+        );
+
+        if (!cabañaActualizada) {
+            return res.status(404).json({
+                status: "error",
+                message: "Cabaña no encontrada",
+            });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            message: "Imagen eliminada correctamente",
+            cabaña: cabañaActualizada,
+        });
+    } catch (error) {
+        console.error("Error al eliminar la imagen:", error);
+        return res.status(500).json({
+            status: "error",
+            message: "Error interno en el servidor",
+        });
+    }
+};
+
 const getCabin = async (req, res) => {
     const { id } = req.params;
 
     try {
         const cabin = await Cabin.findById(id)
             .populate('servicios')
-            .select('nombre modelo precio descripcion cantidadPersonas cantidadBaños cantidadHabitaciones estado servicios imagenPrincipal imagenes comentarios');
+            .select('nombre modelo precio descripcion cantidadPersonas cantidadBaños cantidadHabitaciones estado servicios imagenPrincipal imagenes comentarios minimoDias');
         if (!cabin) {
             return res.status(404).json({ message: 'Cabaña no encontrada' });
         }
@@ -194,5 +239,6 @@ export default {
     getCabin,
     getOpcionesCabania,
     updateCabin,
-    changeState
+    changeState,
+    deleteImageCabin
 }

@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
+import { en_ZA } from '@faker-js/faker';
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',

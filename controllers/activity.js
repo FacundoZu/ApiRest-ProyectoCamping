@@ -68,15 +68,23 @@ const updateActivity = async (req, res) => {
     try {
         const { titulo, imagen, descripcion, fechaInicio, fechaFinal } = req.body;
 
-        const fechaInicioDate = new Date(fechaInicio);
-        const fechaFinalDate = new Date(fechaFinal);
+        const updateFields = { titulo, imagen, descripcion };
 
-        fechaInicioDate.setMinutes(fechaInicioDate.getMinutes() + fechaInicioDate.getTimezoneOffset());
-        fechaFinalDate.setMinutes(fechaFinalDate.getMinutes() + fechaFinalDate.getTimezoneOffset());
+        if (fechaInicio) {
+            const fechaInicioDate = new Date(fechaInicio);
+            fechaInicioDate.setMinutes(fechaInicioDate.getMinutes() + fechaInicioDate.getTimezoneOffset());
+            updateFields.fechaInicio = fechaInicioDate;
+        }
+
+        if (fechaFinal) {
+            const fechaFinalDate = new Date(fechaFinal);
+            fechaFinalDate.setMinutes(fechaFinalDate.getMinutes() + fechaFinalDate.getTimezoneOffset());
+            updateFields.fechaFinal = fechaFinalDate;
+        }
 
         const updatedActivity = await Actividad.findByIdAndUpdate(
             req.params.id,
-            { titulo, imagen, descripcion, fechaInicio: fechaInicioDate, fechaFinal: fechaFinalDate },
+            updateFields,
             { new: true }
         );
 
@@ -118,7 +126,7 @@ const uploadActivityImage = async (req, res) => {
             });
         }
 
-        const { downloadURL } = await uploadFile(image[0], 600, 600); 
+        const { downloadURL } = await uploadFile(image[0], 600, 600);
 
         return res.status(200).json({
             status: "success",

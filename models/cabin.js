@@ -49,6 +49,12 @@ const CabaniaSchema = new Schema({
         min: 0,
         required: true
     },
+    minimoDias: {
+        type: Number,
+        min: 1,
+        default: 1,
+        required: true
+    },
     estado: {
         type: String,
         enum: DISPONIBILIDAD,
