@@ -1,4 +1,5 @@
 import Review from "../models/review.js";
+import Cabania from "../models/cabin.js"
 
 const createReview = async (req, res) => {
     try {
@@ -14,6 +15,10 @@ const createReview = async (req, res) => {
         }
 
         const newReview = new Review({ user, cabin, rating, comments: [{ text: comment }] });
+        const cabinact = await Cabania.findByIdAndUpdate(cabin, {
+            $push: { comentarios: newReview._id }
+        });
+        console.log(cabinact)
         const savedReview = await newReview.save();
 
         return res.status(201).json({ success: true, mensaje: "Reseña creada exitosamente", review: savedReview });
@@ -83,11 +88,9 @@ const updateReview = async (req, res) => {
         if (!review) {
             return res.status(404).json({ success: false, mensaje: "Reseña no encontrada" });
         }
-
-        // Actualizar el rating
+ 
         review.rating = rating;
 
-        // Verificar si el array de comentarios existe y tiene al menos un comentario
         if (review.comments && review.comments.length > 0) {
             review.comments[0].text = comment;
         } else {

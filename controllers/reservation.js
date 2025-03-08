@@ -74,7 +74,7 @@ const getReservations = async (req, res) => {
         const fechaActual = new Date();
 
         const fechaDosMesesAtras = new Date();
-        fechaDosMesesAtras.setMonth(fechaActual.getMonth() - 2);
+        fechaDosMesesAtras.setMonth(fechaActual.getMonth() - 1);
 
         const reservas = await Reservation.find({
             cabaniaId: cabinId,

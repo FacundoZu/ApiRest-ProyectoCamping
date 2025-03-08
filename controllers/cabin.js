@@ -1,17 +1,14 @@
 import Cabin from "../models/cabin.js";
 import { deleteFileFromStorage } from "../utils/deleteFile.js";
 import { uploadFile } from '../utils/uploadFile.js'
+import { format, parse } from "date-fns";
+
 
 const getCabins = async (req, res) => {
     try {
-        const { descripcion, cantidadPersonas, cantidadHabitaciones, cantidadBaños, servicios, reservasHistoricas } = req.query;
+        const { checkIn, checkOut, cantidadPersonas, cantidadHabitaciones, cantidadBaños, servicios } = req.query;
 
         const filtros = {};
-
-        if (descripcion) {
-            filtros.descripcion = { $regex: descripcion, $options: 'i' };
-        }
-
         if (cantidadPersonas && cantidadPersonas !== "0") {
             filtros.cantidadPersonas = cantidadPersonas;
         }
@@ -23,6 +20,7 @@ const getCabins = async (req, res) => {
         if (cantidadBaños && cantidadBaños !== "0") {
             filtros.cantidadBaños = cantidadBaños;
         }
+
         if (servicios) {
             const serviciosArray = servicios.split(',');
             filtros.servicios = { $in: serviciosArray.map(serviceId => serviceId.trim()) };
@@ -30,28 +28,71 @@ const getCabins = async (req, res) => {
 
         const cabins = await Cabin.find(filtros).populate('servicios').populate('reservas');
 
-        if (reservasHistoricas) {
-            const reservasFilter = parseInt(reservasHistoricas);
-            const filteredCabins = cabins.filter(cabin => cabin.reservas.length >= reservasFilter);
-            return res.status(200).json({
-                success: true,
-                cabins: filteredCabins
+        const parseDate = (dateString) => {
+            if (!dateString || typeof dateString !== "string") {
+                throw new Error("Fecha no válida");
+            }
+
+            return parse(dateString, "dd-MM-yyyy", new Date());
+        };
+
+        let availableCabins = cabins;
+
+        
+        if (checkIn && checkOut) {
+            const checkInStr = String(checkIn || "").trim();
+            const checkOutStr = String(checkOut || "").trim();
+            let fechaInicioDate, fechaFinalDate;
+
+            try {
+                fechaInicioDate = parseDate(checkInStr);
+                fechaFinalDate = parseDate(checkOutStr);
+            } catch (error) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Formato de fecha no válido",
+                });
+            }
+
+            if (isNaN(fechaInicioDate) || isNaN(fechaFinalDate)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Las fechas proporcionadas no son válidas",
+                });
+            }
+            availableCabins = cabins.filter(cabin => {
+                const hasOverlappingReservations = cabin.reservas.some(reserva => {
+                    try {
+                        const reservaInicio = reserva.fechaInicio;
+                        const reservaFinal =reserva.fechaFinal;
+                        return (
+                            (fechaInicioDate <= reservaFinal && fechaFinalDate >= reservaInicio) ||
+                            (fechaInicioDate >= reservaInicio && fechaFinalDate <= reservaFinal)
+                        );
+                    } catch (error) {
+                        console.error("Error al procesar fechas de reserva:", error);
+                        return false;
+                    }
+                });
+
+                return !hasOverlappingReservations;
             });
         }
 
         return res.status(200).json({
             success: true,
-            cabins
+            cabins: availableCabins,
         });
-
     } catch (error) {
+        console.error("Error en getCabins:", error);
         return res.status(500).json({
             success: false,
             message: 'Error al obtener las cabañas',
-            error
+            error: error.message,
         });
     }
 };
+
 
 const createCabin = async (req, res) => {
     try {
