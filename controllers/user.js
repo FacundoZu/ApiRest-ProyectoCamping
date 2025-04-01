@@ -377,6 +377,62 @@ const uploadImage = async (req, res) => {
     }
 };
 
+export const registerVisit = async (req, res) => {
+    const { userId, cabinId } = req.body;
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+
+        const alreadyVisited = user.visitedCabins.some(
+            (visit) => visit.cabinId.toString() === cabinId
+        );
+
+        if (!alreadyVisited) {
+            user.visitedCabins.push({ cabinId });
+
+            if (user.visitedCabins.length > 3) {
+                user.visitedCabins.shift();
+            }
+
+            await user.save();
+        }
+
+        res.status(200).json({ message: "Visita registrada exitosamente" });
+    } catch (error) {
+        res.status(500).json({ message: "Error al registrar la visita", error });
+    }
+};
+
+const getUserVisit = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const user = await User.findById(id).populate({
+            path: "visitedCabins.cabinId",
+            populate: {
+                path: "servicios",
+                model: "Servicio",
+            },
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+
+        const sortedVisits = user.visitedCabins.sort(
+            (a, b) => new Date(b.visitedAt) - new Date(a.visitedAt)
+        );
+
+        const lastThreeVisits = sortedVisits.slice(0, 3).map((visit) => visit.cabinId);
+
+        res.status(200).json(lastThreeVisits);
+    } catch (error) {
+        res.status(500).json({ message: "Error al obtener las cabañas visitadas", error });
+    }
+};
 
 export default {
     register,
@@ -389,5 +445,7 @@ export default {
     uploadImage,
     profileById,
     getAllUsers,
-    changeRole
+    changeRole,
+    registerVisit,
+    getUserVisit
 }

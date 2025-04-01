@@ -7,7 +7,7 @@ const ReservationSchema = new Schema({
     usuarioId: {
         type: Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: false
     },
     cabaniaId: {
         type: Schema.Types.ObjectId,
@@ -35,6 +35,11 @@ const ReservationSchema = new Schema({
     fechaCreacion: {
         type: Date,
         default: Date.now
+    },
+    guestInfo: {
+        nombre: String,
+        email: String,
+        telefono: String
     },
     metodoPago: {
         type: String,

@@ -4,11 +4,25 @@ import Payment from '../models/payment.js';
 
 const createReservation = async (req, res) => {
     try {
-        const { usuarioId, cabaniaId, fechaInicio, fechaFinal, precioTotal, payment } = req.body;
+        const { usuarioId, cabaniaId, fechaInicio, fechaFinal, precioTotal, payment, guestInfo } = req.body;
         const fechaActual = new Date();
+
+        if (!cabaniaId || !fechaInicio || !fechaFinal || !precioTotal || !payment) {
+            return res.status(400).json({ mensaje: 'Faltan datos requeridos para la reserva.' });
+        }
 
         if (new Date(fechaInicio) <= fechaActual) {
             return res.status(400).json({ mensaje: 'La reserva debe ser para una fecha futura.' });
+        }
+
+        if (!usuarioId) {
+            if (!guestInfo || !guestInfo.nombre || !guestInfo.email || !guestInfo.telefono) {
+                return res.status(400).json({ mensaje: 'Se requiere información del huésped para reservas sin cuenta.' });
+            }
+            
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestInfo.email)) {
+                return res.status(400).json({ mensaje: 'Por favor ingresa un email válido.' });
+            }
         }
 
         const reservasExistentes = await Reservation.find({
@@ -28,17 +42,22 @@ const createReservation = async (req, res) => {
         });
 
         if (reservasExistentes.length > 0) {
-            return res.status(400).json({ mensaje: 'Ya existe una reserva para esta fecha o está muy próxima a otra.' });
+            return res.status(400).json({ mensaje: 'Ya existe una reserva para estas fechas.' });
         }
 
         const nuevaReserva = new Reservation({
-            usuarioId,
+            usuarioId: usuarioId || null,
             cabaniaId,
             fechaInicio,
             fechaFinal,
             precioTotal,
             metodoPago: payment.tipo,
-            estadoReserva: 'confirmada',
+            estadoReserva: 'pendiente',
+            guestInfo: !usuarioId ? {
+                nombre: guestInfo.nombre,
+                email: guestInfo.email,
+                telefono: guestInfo.telefono
+            } : null
         });
 
         const reservaGuardada = await nuevaReserva.save();
@@ -47,7 +66,7 @@ const createReservation = async (req, res) => {
             reservaId: reservaGuardada._id,
             tipo: payment.tipo,
             precioTotal,
-            estadoPago: payment.estadoPago || 'pagado',
+            estadoPago: payment.estadoPago || 'pendiente',
             transaccionId: payment.transaccionId || null,
             cuotas: payment.cuotas || null
         });
@@ -60,11 +79,17 @@ const createReservation = async (req, res) => {
 
         res.status(201).json({
             status: "success",
-            reservaGuardada,
-            pagoGuardado
+            reserva: reservaGuardada,
+            pago: pagoGuardado
         });
+
     } catch (error) {
-        res.status(500).json({ mensaje: 'Error al crear la reserva', error });
+        console.error('Error al crear reserva:', error);
+        res.status(500).json({ 
+            status: "error",
+            mensaje: 'Error al crear la reserva',
+            error: error.message 
+        });
     }
 };
 
